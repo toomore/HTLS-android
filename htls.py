@@ -3,6 +3,7 @@
 import android
 from datetime import datetime
 import csv
+from time import sleep
 
 HTPATH = '/sdcard/sl4a/scripts'
 
@@ -88,10 +89,46 @@ def htexp(q):
     ii += 1
   return re[q]
 
-## Start android
-d = android.Android()
-d.makeToast('Start 河圖洛書')
-s = htls('中華民國').all(100,2011)
-d.dialogCreateAlert('HTLS 河圖洛書',s)
-d.dialogSetPositiveButtonText('確定')
-d.dialogShow()
+def main():
+  ## Start android
+  d = android.Android()
+  d.makeToast('Start 河圖洛書')
+
+  d.dialogGetInput('計算姓名、名稱','請輸入預計算姓名或名稱', d.getClipboard().result)
+  name = d.dialogGetResponse().result['value'].encode('utf-8')
+  d.dialogDismiss()
+
+  d.dialogCreateAlert('出生年','請選擇出生西元年')
+  d.dialogShow()
+  sleep(2)
+  d.dialogCreateDatePicker(1984)
+  d.dialogShow()
+  burnyear = d.dialogGetResponse().result['year']
+
+  d.dialogCreateAlert('計算年','請選擇欲計算流年之西元年')
+  d.dialogShow()
+  sleep(2)
+  d.dialogCreateDatePicker(2011)
+  d.dialogShow()
+  calyear = d.dialogGetResponse().result['year']
+
+  try:
+    s = htls(name).all(calyear - burnyear + 1, calyear - 1911)
+    outtitle = '計算民國%(year)s年(%(age)s歲)流年：\n' % {'age': calyear - burnyear + 1, 'year': calyear - 1911}
+    d.dialogCreateAlert('HTLS 河圖洛書',outtitle + s)
+    d.dialogSetPositiveButtonText('再算一次')
+    d.dialogSetNegativeButtonText('結束')
+    d.dialogShow()
+    ##print d.dialogGetResponse()
+    if d.dialogGetResponse().result['which'] == 'positive':
+      main()
+  except:
+    d.dialogCreateAlert('HTLS 河圖洛書','輸入錯誤！')
+    d.dialogSetPositiveButtonText('再算一次')
+    d.dialogSetNegativeButtonText('結束')
+    d.dialogShow()
+    if d.dialogGetResponse().result['which'] == 'positive':
+      d.setClipboard(name)
+      main()
+
+main()
