@@ -147,8 +147,13 @@ def main():
 def chht():
   d = android.Android()
   htlist = ['蘊釀運','吸收運','成長運','成熟運','發展運','巔峰運','老化運','病變運','破滅運','谷底運']
+  htss = ['90-126','126-162','162-198','198-234','234-270','270-306','306-342','342-18','18-54','54-90']
+  htlists = []
+  for i in xrange(10):
+    htlists.append("%s (%s)" % (htlist[i], htss[i]))
+
   d.dialogCreateAlert('請選擇服務')
-  d.dialogSetItems(htlist)
+  d.dialogSetItems(htlists)
   d.dialogShow()
   respon = htlist[d.dialogGetResponse().result['item']]
 
