@@ -152,7 +152,7 @@ def chht():
   for i in xrange(10):
     htlists.append("%s (%s)" % (htlist[i], htss[i]))
 
-  d.dialogCreateAlert('請選擇服務')
+  d.dialogCreateAlert('請選擇河圖運勢')
   d.dialogSetItems(htlists)
   d.dialogShow()
   respon = htlist[d.dialogGetResponse().result['item']]
