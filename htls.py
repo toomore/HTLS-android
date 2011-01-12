@@ -81,10 +81,10 @@ def htexp(q):
   ii = 1
   re = {}
   for i in csv_read:
-    print ii
+    #print ii
     hh = ''
     for h in i[1:]:
-      hh += '● ' + h + '\n'
+      hh += '● ' + h + '\n\n'
     re[i[0]] = hh
     ii += 1
   return re[q]
@@ -96,6 +96,7 @@ def main():
 
   d.dialogGetInput('計算姓名、名稱','請輸入預計算姓名或名稱', d.getClipboard().result)
   name = d.dialogGetResponse().result['value'].encode('utf-8')
+  d.setClipboard(name)
   d.dialogDismiss()
 
   d.dialogCreateAlert('出生年','請選擇出生西元年')
@@ -113,22 +114,73 @@ def main():
   calyear = d.dialogGetResponse().result['year']
 
   try:
+    d.dialogCreateSpinnerProgress('計算中','...')
+    d.dialogShow()
     s = htls(name).all(calyear - burnyear + 1, calyear - 1911)
     outtitle = '計算民國%(year)s年(%(age)s歲)流年：\n' % {'age': calyear - burnyear + 1, 'year': calyear - 1911}
+    d.dialogDismiss()
     d.dialogCreateAlert('HTLS 河圖洛書',outtitle + s)
     d.dialogSetPositiveButtonText('再算一次')
+    d.dialogSetNeutralButtonText('河圖解釋')
     d.dialogSetNegativeButtonText('結束')
     d.dialogShow()
     ##print d.dialogGetResponse()
     if d.dialogGetResponse().result['which'] == 'positive':
       main()
+    elif d.dialogGetResponse().result['which'] == 'neutral':
+      chht()
+    else:
+      pass
   except:
     d.dialogCreateAlert('HTLS 河圖洛書','輸入錯誤！')
     d.dialogSetPositiveButtonText('再算一次')
+    d.dialogSetNeutralButtonText('河圖解釋')
     d.dialogSetNegativeButtonText('結束')
     d.dialogShow()
     if d.dialogGetResponse().result['which'] == 'positive':
-      d.setClipboard(name)
       main()
+    elif d.dialogGetResponse().result['which'] == 'neutral':
+      chht()
+    else:
+      pass
 
-main()
+def chht():
+  d = android.Android()
+  htlist = ['蘊釀運','吸收運','成長運','成熟運','發展運','巔峰運','老化運','病變運','破滅運','谷底運']
+  d.dialogCreateAlert('請選擇服務')
+  d.dialogSetItems(htlist)
+  d.dialogShow()
+  respon = htlist[d.dialogGetResponse().result['item']]
+
+  d.dialogCreateSpinnerProgress('計算中','...')
+  d.dialogShow()
+  re = htexp(respon)
+  d.dialogDismiss()
+
+  d.dialogCreateAlert('河圖解釋 %s' % respon, re)
+  d.dialogSetPositiveButtonText('其他解釋')
+  d.dialogSetNeutralButtonText('回選擇目錄')
+  d.dialogSetNegativeButtonText('結束')
+  d.dialogShow()
+
+  if d.dialogGetResponse().result['which'] == 'positive':
+    chht()
+  elif d.dialogGetResponse().result['which'] == 'neutral':
+    first()
+  else:
+    pass
+
+def first():
+  d = android.Android()
+  d.dialogCreateAlert('請選擇服務')
+  d.dialogSetItems(['計算流年','河圖解釋'])
+  d.dialogShow()
+  response = d.dialogGetResponse().result['item']
+
+  print d.dialogGetResponse()
+  if response == 0:
+    main()
+  else:
+    chht()
+
+first()
